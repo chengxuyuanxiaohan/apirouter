@@ -1,0 +1,18 @@
+{
+  "name": "apirouter",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "local": "node scripts/local-server.js",
+    "vercel:dev": "vercel dev",
+    "check": "node --check api/chat.js && node --check config/providers.js && node --check lib/router.js && node --check scripts/local-server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "vercel": "^46.0.0"
+  }
+}
