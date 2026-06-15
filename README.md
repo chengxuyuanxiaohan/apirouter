@@ -39,6 +39,46 @@ export const providers = [
     path: "/v2/chat",
     apiKey: process.env.COHERE_API_KEY,
     models: [{ name: "command-a-03-2025" }]
+  },
+  {
+    id: "openrouter",
+    baseUrl: "https://openrouter.ai",
+    path: "/api/v1/chat/completions",
+    apiKey: process.env.OPENROUTER_API_KEY,
+    models: [
+      { name: "openai/gpt-oss-120b" },
+      { name: "openai/gpt-4o-mini" }
+    ]
+  },
+  {
+    id: "nvidia",
+    baseUrl: "https://integrate.api.nvidia.com",
+    path: "/v1/chat/completions",
+    apiKey: process.env.NVIDIA_API_KEY,
+    models: [
+      { name: "openai/gpt-oss-120b" },
+      { name: "nvidia/llama-3.1-nemotron-nano-8b-v1" }
+    ]
+  },
+  {
+    id: "groq",
+    baseUrl: "https://api.groq.com",
+    path: "/openai/v1/chat/completions",
+    apiKey: process.env.GROQ_API_KEY,
+    models: [
+      { name: "openai/gpt-oss-120b" },
+      { name: "llama-3.1-8b-instant" }
+    ]
+  },
+  {
+    id: "mistral",
+    baseUrl: "https://api.mistral.ai",
+    path: "/v1/chat/completions",
+    apiKey: process.env.MISTRAL_API_KEY,
+    models: [
+      { name: "mistral-large-latest" },
+      { name: "mistral-small-latest" }
+    ]
   }
 ];
 ```
@@ -93,6 +133,12 @@ Use `.env.example` as a starting point.
 ROUTER_AUTH_KEY=change-me
 GEMINI_API_KEY=...
 COHERE_API_KEY=...
+OPENROUTER_API_KEY=...
+OPENROUTER_SITE_URL=https://your-app.vercel.app
+OPENROUTER_APP_NAME=apirouter
+NVIDIA_API_KEY=...
+GROQ_API_KEY=...
+MISTRAL_API_KEY=...
 ```
 
 `ROUTER_AUTH_KEY` is required. If it is missing, the API returns `500` instead of running without authentication.
@@ -111,7 +157,7 @@ Test locally:
 curl http://localhost:3000/api/chat \
   -H "x-router-key: change-me" \
   -H "content-type: application/json" \
-  -d '{"model":"gemini-2.5-flash","messages":[{"role":"user","content":"hello"}]}'
+  -d '{"model":"openai/gpt-oss-120b","messages":[{"role":"user","content":"hello"}]}'
 ```
 
 ## Verification
