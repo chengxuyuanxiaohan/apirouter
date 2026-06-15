@@ -42,7 +42,7 @@ export const providers = [
     apiKey: process.env.NVIDIA_API_KEY,
     timeoutMs: 30000,
     models: [
-      { name: "qwen/qwen2.5-coder-32b-instruct" }
+      { name: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning" }
     ]
   },
   {

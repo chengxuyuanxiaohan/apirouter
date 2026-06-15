@@ -57,7 +57,7 @@ export const providers = [
     apiKey: process.env.NVIDIA_API_KEY,
     models: [
       { name: "openai/gpt-oss-120b" },
-      { name: "nvidia/llama-3.1-nemotron-nano-8b-v1" }
+      { name: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning" }
     ]
   },
   {
