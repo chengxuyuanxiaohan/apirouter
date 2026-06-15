@@ -32,9 +32,7 @@ export const providers = [
       "X-Title": process.env.OPENROUTER_APP_NAME || "apirouter"
     },
     models: [
-      { name: "openai/gpt-oss-120b" },
-      { name: "openai/gpt-4o-mini" },
-      { name: "anthropic/claude-3.5-haiku" }
+      { name: "openrouter/free"}
     ]
   },
   {
@@ -44,8 +42,7 @@ export const providers = [
     apiKey: process.env.NVIDIA_API_KEY,
     timeoutMs: 30000,
     models: [
-      { name: "openai/gpt-oss-120b" },
-      { name: "nvidia/llama-3.1-nemotron-nano-8b-v1" }
+      { name: "qwen/qwen2.5-coder-32b-instruct" }
     ]
   },
   {
@@ -55,8 +52,7 @@ export const providers = [
     apiKey: process.env.GROQ_API_KEY,
     timeoutMs: 30000,
     models: [
-      { name: "openai/gpt-oss-120b" },
-      { name: "llama-3.1-8b-instant" }
+      { name: "qwen/qwen3-32b"}
     ]
   },
   {
