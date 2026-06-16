@@ -5,20 +5,39 @@ A Vercel-ready API router for forwarding chat requests to configured backend mod
 ## Request
 
 ```text
-POST /api/chat
+POST /v1/chat/completions
 ```
 
 ```bash
-curl https://your-app.vercel.app/api/chat \
-  -H "x-router-key: $ROUTER_AUTH_KEY" \
+curl https://your-app.vercel.app/v1/chat/completions \
+  -H "Authorization: Bearer $ROUTER_AUTH_KEY" \
   -H "content-type: application/json" \
   -d '{"model":"gemini-2.5-flash","messages":[{"role":"user","content":"hello"}]}'
 ```
 
-Clients send only:
+The router now follows the OpenAI Chat Completions shape:
 
 - `model`: the backend model name to use.
 - `messages`: chat messages.
+- additional OpenAI-compatible request fields such as `temperature`, `max_tokens`, `tools`, and `response_format` are forwarded upstream.
+
+The old custom endpoint `POST /api/chat` and `x-router-key` header still work for compatibility, but new clients should use `/v1/chat/completions` with `Authorization: Bearer ...`.
+
+OpenAI SDK example:
+
+```js
+import OpenAI from "openai";
+
+const client = new OpenAI({
+  apiKey: process.env.ROUTER_AUTH_KEY,
+  baseURL: "https://your-app.vercel.app/v1"
+});
+
+const response = await client.chat.completions.create({
+  model: "gemini-2.5-flash",
+  messages: [{ role: "user", content: "hello" }]
+});
+```
 
 ## Configuration
 
@@ -154,8 +173,8 @@ npm run local
 Test locally:
 
 ```bash
-curl http://localhost:3000/api/chat \
-  -H "x-router-key: change-me" \
+curl http://localhost:3000/v1/chat/completions \
+  -H "Authorization: Bearer change-me" \
   -H "content-type: application/json" \
   -d '{"model":"openai/gpt-oss-120b","messages":[{"role":"user","content":"hello"}]}'
 ```

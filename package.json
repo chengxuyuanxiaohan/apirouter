@@ -6,7 +6,7 @@
   "scripts": {
     "local": "node scripts/local-server.js",
     "vercel:dev": "vercel dev",
-    "check": "node --check api/chat.js && node --check config/providers.js && node --check lib/router.js && node --check scripts/local-server.js",
+    "check": "node --check api/chat.js && node --check api/v1/chat/completions.js && node --check config/providers.js && node --check lib/router.js && node --check scripts/local-server.js && node -e \"JSON.parse(require('node:fs').readFileSync('vercel.json', 'utf8'))\"",
     "test": "node --test"
   },
   "engines": {

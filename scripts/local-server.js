@@ -44,7 +44,7 @@ const host = process.env.HOST || "127.0.0.1";
 const server = createServer((req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
 
-  if (url.pathname !== "/api/chat") {
+  if (url.pathname !== "/api/chat" && url.pathname !== "/v1/chat/completions") {
     res.statusCode = 404;
     res.setHeader("content-type", "application/json; charset=utf-8");
     res.end(JSON.stringify({ error: "not found" }));
