@@ -133,6 +133,34 @@ test("handler accepts OpenAI-style bearer authentication and forwards request pa
   assert.deepEqual(calls[0].body.messages[0].content, [{ type: "text", text: "hello" }]);
 });
 
+test("handler trims configured and request auth tokens", async () => {
+  const handler = createChatHandler({
+    providers,
+    routerAuthKey: " test-key ",
+    fetchImpl: async () => {
+      return new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "content-type": "application/json" }
+      });
+    }
+  });
+  const res = createResponse();
+
+  await handler(
+    createRequest(
+      {
+        model: "first-only",
+        messages: [{ role: "user", content: "hello" }]
+      },
+      undefined,
+      { authorization: "bearer   test-key  " }
+    ),
+    res
+  );
+
+  assert.equal(res.statusCode, 200);
+});
+
 test("handler rejects missing router auth", async () => {
   const handler = createChatHandler({
     providers,
