@@ -168,3 +168,26 @@ test("handler rejects unknown models", async () => {
 
   assert.equal(res.statusCode, 404);
 });
+
+test("handler returns provider config errors before routing", async () => {
+  const handler = createChatHandler({
+    providers: [],
+    providerConfigError: "PROVIDERS_JSON is not configured",
+    routerAuthKey: "test-key",
+    fetchImpl: async () => {
+      throw new Error("fetch should not be called");
+    }
+  });
+  const res = createResponse();
+
+  await handler(
+    createRequest({
+      model: "shared-model",
+      messages: [{ role: "user", content: "hello" }]
+    }),
+    res
+  );
+
+  assert.equal(res.statusCode, 500);
+  assert.equal(JSON.parse(res.body).error, "PROVIDERS_JSON is not configured");
+});

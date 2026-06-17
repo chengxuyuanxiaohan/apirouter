@@ -1,69 +1,65 @@
 export const routerAuthKey = process.env.ROUTER_AUTH_KEY;
 
-export const providers = [
-  {
-    id: "gemini",
-    baseUrl: "https://generativelanguage.googleapis.com",
-    path: "/v1beta/openai/chat/completions",
-    apiKey: process.env.GEMINI_API_KEY,
-    timeoutMs: 30000,
-    models: [
-      { name: "gemini-2.5-flash" }
-    ]
-  },
-  {
-    id: "cohere",
-    baseUrl: "https://api.cohere.com",
-    path: "/v2/chat",
-    apiKey: process.env.COHERE_API_KEY,
-    timeoutMs: 30000,
-    models: [
-      { name: "command-a-03-2025" }
-    ]
-  },
-  {
-    id: "openrouter",
-    baseUrl: "https://openrouter.ai",
-    path: "/api/v1/chat/completions",
-    apiKey: process.env.OPENROUTER_API_KEY,
-    timeoutMs: 30000,
-    extraHeaders: {
-      "HTTP-Referer": process.env.OPENROUTER_SITE_URL || "https://localhost",
-      "X-Title": process.env.OPENROUTER_APP_NAME || "apirouter"
-    },
-    models: [
-      { name: "openrouter/free"}
-    ]
-  },
-  {
-    id: "nvidia",
-    baseUrl: "https://integrate.api.nvidia.com",
-    path: "/v1/chat/completions",
-    apiKey: process.env.NVIDIA_API_KEY,
-    timeoutMs: 30000,
-    models: [
-      { name: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning" }
-    ]
-  },
-  {
-    id: "groq",
-    baseUrl: "https://api.groq.com",
-    path: "/openai/v1/chat/completions",
-    apiKey: process.env.GROQ_API_KEY,
-    timeoutMs: 30000,
-    models: [
-      { name: "qwen/qwen3-32b"}
-    ]
-  },
-  {
-    id: "mistral",
-    baseUrl: "https://api.mistral.ai",
-    path: "/v1/chat/completions",
-    apiKey: process.env.MISTRAL_API_KEY,
-    timeoutMs: 30000,
-    models: [
-      { name: "mistral-large-latest" },
-      { name: "mistral-small-latest" }
-    ]
+function envValue(value, env) {
+  if (typeof value !== "string" || !value.startsWith("$")) {
+    return value;
   }
-];
+
+  return env[value.slice(1)];
+}
+
+function resolveHeaders(headers, env) {
+  if (!headers) {
+    return undefined;
+  }
+
+  const resolvedHeaders = Object.entries(headers)
+    .map(([name, value]) => [name, envValue(value, env)])
+    .filter(([, value]) => value !== undefined);
+
+  return resolvedHeaders.length ? Object.fromEntries(resolvedHeaders) : undefined;
+}
+
+function normalizeProvider(provider, env) {
+  return {
+    ...provider,
+    apiKey: provider.apiKey,
+    extraHeaders: resolveHeaders(provider.extraHeaders, env)
+  };
+}
+
+export function loadProvidersFromJson(rawJson, env = process.env) {
+  if (!rawJson) {
+    return {
+      providers: [],
+      error: "PROVIDERS_JSON is not configured"
+    };
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(rawJson);
+  } catch {
+    return {
+      providers: [],
+      error: "PROVIDERS_JSON must be valid JSON"
+    };
+  }
+
+  if (!Array.isArray(parsed)) {
+    return {
+      providers: [],
+      error: "PROVIDERS_JSON must be a JSON array"
+    };
+  }
+
+  return {
+    providers: parsed.map((provider) => normalizeProvider(provider, env)),
+    error: null
+  };
+}
+
+const providerConfig = loadProvidersFromJson(process.env.PROVIDERS_JSON);
+
+export const providers = providerConfig.providers;
+export const providerConfigError = providerConfig.error;

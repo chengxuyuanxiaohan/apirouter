@@ -41,65 +41,31 @@ const response = await client.chat.completions.create({
 
 ## Configuration
 
-Configure providers in [config/providers.js](/Users/gd-npc-1176/Documents/apirouter/config/providers.js).
+Configure providers with Vercel environment variables. [config/providers.js](/Users/gd-npc-1176/Documents/apirouter/config/providers.js) reads `PROVIDERS_JSON` at runtime. Provider API keys live directly inside that JSON value.
 
-```js
-export const providers = [
+```bash
+PROVIDERS_JSON='[
   {
-    id: "gemini",
-    baseUrl: "https://generativelanguage.googleapis.com",
-    path: "/v1beta/openai/chat/completions",
-    apiKey: process.env.GEMINI_API_KEY,
-    models: [{ name: "gemini-2.5-flash" }]
+    "id": "gemini",
+    "baseUrl": "https://generativelanguage.googleapis.com",
+    "path": "/v1beta/openai/chat/completions",
+    "apiKey": "replace-with-gemini-key",
+    "timeoutMs": 30000,
+    "models": [{ "name": "gemini-2.5-flash" }]
   },
   {
-    id: "cohere",
-    baseUrl: "https://api.cohere.com",
-    path: "/v2/chat",
-    apiKey: process.env.COHERE_API_KEY,
-    models: [{ name: "command-a-03-2025" }]
-  },
-  {
-    id: "openrouter",
-    baseUrl: "https://openrouter.ai",
-    path: "/api/v1/chat/completions",
-    apiKey: process.env.OPENROUTER_API_KEY,
-    models: [
-      { name: "openai/gpt-oss-120b" },
-      { name: "openai/gpt-4o-mini" }
-    ]
-  },
-  {
-    id: "nvidia",
-    baseUrl: "https://integrate.api.nvidia.com",
-    path: "/v1/chat/completions",
-    apiKey: process.env.NVIDIA_API_KEY,
-    models: [
-      { name: "openai/gpt-oss-120b" },
-      { name: "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning" }
-    ]
-  },
-  {
-    id: "groq",
-    baseUrl: "https://api.groq.com",
-    path: "/openai/v1/chat/completions",
-    apiKey: process.env.GROQ_API_KEY,
-    models: [
-      { name: "openai/gpt-oss-120b" },
-      { name: "llama-3.1-8b-instant" }
-    ]
-  },
-  {
-    id: "mistral",
-    baseUrl: "https://api.mistral.ai",
-    path: "/v1/chat/completions",
-    apiKey: process.env.MISTRAL_API_KEY,
-    models: [
-      { name: "mistral-large-latest" },
-      { name: "mistral-small-latest" }
-    ]
+    "id": "openrouter",
+    "baseUrl": "https://openrouter.ai",
+    "path": "/api/v1/chat/completions",
+    "apiKey": "replace-with-openrouter-key",
+    "timeoutMs": 30000,
+    "extraHeaders": {
+      "HTTP-Referer": "https://your-app.vercel.app",
+      "X-Title": "apirouter"
+    },
+    "models": [{ "name": "openrouter/free" }]
   }
-];
+]'
 ```
 
 This is a many-to-many mapping:
@@ -150,14 +116,7 @@ Use `.env.example` as a starting point.
 
 ```bash
 ROUTER_AUTH_KEY=change-me
-GEMINI_API_KEY=...
-COHERE_API_KEY=...
-OPENROUTER_API_KEY=...
-OPENROUTER_SITE_URL=https://your-app.vercel.app
-OPENROUTER_APP_NAME=apirouter
-NVIDIA_API_KEY=...
-GROQ_API_KEY=...
-MISTRAL_API_KEY=...
+PROVIDERS_JSON='[...]'
 ```
 
 `ROUTER_AUTH_KEY` is required. If it is missing, the API returns `500` instead of running without authentication.
