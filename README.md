@@ -1,148 +1,31 @@
-# API Router
+国产大模型、Google Gemini、OpenRouter 免费模型……
+每个平台都有一点免费额度，但真正用起来却很麻烦：接口不一样、鉴权不一样、模型名不一样，今天这个限流，明天那个超时。
 
-A Vercel-ready API router for forwarding chat requests to configured backend model providers. Provider tokens stay on the server, and the router automatically tries another configured provider when one is rate-limited or temporarily unavailable.
+API Router 帮你把这些模型源统一成一个 OpenAI 兼容接口。
 
-## Request
+你只需要配置一次 PROVIDERS_JSON，就可以把 Gemini、国产大模型、OpenRouter 等多个后端模型接到同一个入口。
 
-```text
-POST /v1/chat/completions
-```
+客户端仍然像调用 OpenAI 一样请求 /v1/chat/completions，底层由 Router 帮你转发到真实模型源。
 
-```bash
-curl https://your-app.vercel.app/v1/chat/completions \
-  -H "Authorization: Bearer $ROUTER_AUTH_KEY" \
-  -H "content-type: application/json" \
-  -d '{"model":"gemini-2.5-flash","messages":[{"role":"user","content":"hello"}]}'
-```
+想省 token？把各平台的免费额度集中起来用。
 
-The router now follows the OpenAI Chat Completions shape:
+想试国产大模型？一个模型名就能切到你配置好的后端。
 
-- `model`: the backend model name to use.
-- `messages`: chat messages.
-- additional OpenAI-compatible request fields such as `temperature`, `max_tokens`, `tools`, and `response_format` are forwarded upstream.
+想接 Gemini？不用改业务代码，换个配置就能跑。
 
-The old custom endpoint `POST /api/chat` and `x-router-key` header still work for compatibility, but new clients should use `/v1/chat/completions` with `Authorization: Bearer ...`.
+当某个模型限流、超时或服务异常时，Router 还可以按配置顺序尝试下一个可用源，让你的 AI 应用不再被单个平台卡死。
 
-OpenAI SDK example:
+如果你想
 
-```js
-import OpenAI from "openai";
+- 集中管理多个大模型的 api key
+- 白嫖各平台免费 token，不浪费任何可用额度
+- 用一个接口管理国产大模型、Gemini、OpenRouter 等多个来源
+- 保持 OpenAI SDK 调用方式，少改代码
+- 把 provider key 放在服务端，避免暴露到前端
+- 可部署到 Vercel，轻量、简单、成本低
 
-const client = new OpenAI({
-  apiKey: process.env.ROUTER_AUTH_KEY,
-  baseURL: "https://your-app.vercel.app/v1"
-});
+**一句话**
 
-const response = await client.chat.completions.create({
-  model: "gemini-2.5-flash",
-  messages: [{ role: "user", content: "hello" }]
-});
-```
+API Router 不是另一个大模型平台，而是你的 “免费 token 调度器”。把能用的模型都接进来，把能省的 token 都省下来。
 
-## Configuration
-
-Configure providers with Vercel environment variables. [config/providers.js](/Users/gd-npc-1176/Documents/apirouter/config/providers.js) reads `PROVIDERS_JSON` at runtime. Provider API keys live directly inside that JSON value.
-
-```bash
-PROVIDERS_JSON='[
-  {
-    "id": "gemini",
-    "baseUrl": "https://generativelanguage.googleapis.com",
-    "path": "/v1beta/openai/chat/completions",
-    "apiKey": "replace-with-gemini-key",
-    "timeoutMs": 30000,
-    "models": [{ "name": "gemini-2.5-flash" }]
-  },
-  {
-    "id": "openrouter",
-    "baseUrl": "https://openrouter.ai",
-    "path": "/api/v1/chat/completions",
-    "apiKey": "replace-with-openrouter-key",
-    "timeoutMs": 30000,
-    "extraHeaders": {
-      "HTTP-Referer": "https://your-app.vercel.app",
-      "X-Title": "apirouter"
-    },
-    "models": [{ "name": "openrouter/free" }]
-  }
-]'
-```
-
-This is a many-to-many mapping:
-
-- One provider can list many models.
-- One model can appear under many providers.
-- Matching providers are tried in the order they appear in `providers`.
-
-If the same model appears under multiple providers, the router tries them in config order.
-
-## Provider Fields
-
-- `id`: provider identifier used in response headers.
-- `baseUrl`: upstream API origin.
-- `path`: upstream chat endpoint path.
-- `apiKey`: provider API key.
-- `authHeader`: optional auth header name. Defaults to `authorization`.
-- `authScheme`: optional auth scheme. Defaults to `Bearer`; set to `null` for raw key headers.
-- `extraHeaders`: optional fixed upstream headers.
-- `extraBody`: optional fixed upstream JSON body fields.
-- `models`: models this provider can serve.
-
-Model entries support:
-
-- `name`: model name accepted from the client.
-- `upstreamModel`: optional provider-specific model name override.
-- `extraBody`: optional fixed body fields for that provider/model pair.
-
-## Fallback
-
-Fallback is triggered for:
-
-- HTTP `429`
-- HTTP `500`, `502`, `503`, `504`
-- response bodies containing `rate limit`, `too many requests`, `quota`, `resource exhausted`, or `limit exceeded`
-
-Responses include:
-
-```text
-x-router-provider: provider that answered
-x-router-model: model sent upstream
-x-router-attempts: JSON list of attempted providers
-```
-
-## Environment Variables
-
-Use `.env.example` as a starting point.
-
-```bash
-ROUTER_AUTH_KEY=change-me
-PROVIDERS_JSON='[...]'
-```
-
-`ROUTER_AUTH_KEY` is required. If it is missing, the API returns `500` instead of running without authentication.
-
-## Local Development
-
-```bash
-npm install
-cp .env.example .env
-npm run local
-```
-
-Test locally:
-
-```bash
-curl http://localhost:3000/v1/chat/completions \
-  -H "Authorization: Bearer change-me" \
-  -H "content-type: application/json" \
-  -d '{"model":"openai/gpt-oss-120b","messages":[{"role":"user","content":"hello"}]}'
-```
-
-## Verification
-
-```bash
-npm run check
-npm test
-```
-
-`npm run local` does not require Vercel login. Use `npm run vercel:dev` only when you specifically want to test through the Vercel CLI.
+立即部署自己的 API Router，开始整合你的免费 AI Token。
